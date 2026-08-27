@@ -145,6 +145,7 @@ const excluirProduto = (req, res) => {
 };
 
 module.exports = {
+    produtos,
     listarProdutos,
     buscarProdutoPorId,
     criarProduto,
