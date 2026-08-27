@@ -1,0 +1,5 @@
+import { Link } from "react-router-dom";
+import logo from "../assets/images/logo.png";
+import Icone from "./Icone";
+function Cabecalho() { return <header className="cabecalho"><div className="cabecalho__conteudo"><Link className="marca" to="/" aria-label="Flor do Campo - página inicial"><span className="marca__simbolo"><img src={logo} alt="" /></span><span className="marca__texto"><span className="marca__nome">Flor do Campo</span><span className="marca__subtitulo">Moda e Beleza</span></span></Link><nav className="navegacao" aria-label="Navegação principal"><Link className="navegacao__link--ativo" to="/">Início</Link><Link to="/#categorias">Categorias</Link><Link to="/categoria/moda-social">Moda Social</Link><Link to="/sobre">Sobre</Link><Link to="/#localizacao">Localização</Link><Link to="/contato">Contato</Link></nav><a className="botao-whatsapp" href="https://wa.me/5554996615109" target="_blank" rel="noreferrer"><Icone nome="whatsapp" /><span>Fale pelo WhatsApp</span></a></div></header>; }
+export default Cabecalho;
