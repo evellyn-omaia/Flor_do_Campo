@@ -1,0 +1,1 @@
+const router=require("express").Router();const controller=require("../controllers/bannerController");const verificarAdmin=require("../middlewares/verificarAdmin");router.get("/",controller.listar);router.post("/",verificarAdmin,controller.criar);router.put("/:id",verificarAdmin,controller.atualizar);module.exports=router;
