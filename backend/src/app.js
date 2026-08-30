@@ -4,10 +4,12 @@ const categoriaRoutes = require("./routes/categoriaRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const cors = require("cors");
 const produtosRoutes = require("./routes/produtoRoutes");
+const bannerRoutes = require("./routes/bannerRoutes");
+const carrinhoRoutes = require("./routes/carrinhoRoutes");
 const app = express();
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
 
 app.get("/", (req, res) => {
     res.json({
@@ -16,6 +18,8 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/produtos", produtosRoutes);
+app.use("/api/banners", bannerRoutes);
+app.use("/api/carrinho", carrinhoRoutes);
 app.use("/api/categorias", categoriaRoutes);
 app.use("/api/pedidos", pedidoRoutes);
 app.use("/api/dashboard", dashboardRoutes);

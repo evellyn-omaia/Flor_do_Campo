@@ -9,9 +9,9 @@ router.post("/", pedidoController.criarPedido);
 
 router.get("/", verificarAdmin, pedidoController.listarPedidos);
 
-router.get("/:id", verificarAdmin, pedidoController.buscarPedidoPorId);
+router.get("/:id", pedidoController.buscarPedidoPorId);
 
-router.put(
+router.patch(
     "/:id/status",
     verificarAdmin,
     pedidoController.atualizarStatusPedido

@@ -1,95 +1,41 @@
-let categorias = [];
-
-const listarCategorias = (req, res) => {
-    res.json(categorias);
+const { ler, salvar } = require("../data/store");
+const listarCategorias = (q, s) => s.json(ler().categorias);
+const buscarCategoriaPorId = (q, s) => {
+  const x = ler().categorias.find((x) => x.id === +q.params.id);
+  x ? s.json(x) : s.status(404).json({ mensagem: "Categoria não encontrada." });
 };
-
-const buscarCategoriaPorId = (req, res) => {
-    const id = Number(req.params.id);
-
-    const categoria = categorias.find(c => c.id === id);
-
-    if (!categoria) {
-        return res.status(404).json({
-            mensagem: "Categoria não encontrada."
-        });
-    }
-
-    res.json(categoria);
-};
-
-const criarCategoria = (req, res) => {
-    const { nome } = req.body;
-
-    if (!nome) {
-        return res.status(400).json({
-            mensagem: "O nome da categoria é obrigatório."
-        });
-    }
-
-    const novaCategoria = {
-        id: Date.now(),
-        nome,
-        ativo: true
+const criarCategoria = (q, s) => {
+  if (!q.body.nome)
+    return s.status(400).json({ mensagem: "Nome obrigatório." });
+  const d = ler(),
+    categoria = {
+      id: Date.now(),
+      ativo: true,
+      ...q.body,
+      slug: q.body.slug || q.body.nome.toLowerCase().replace(/\s+/g, "-"),
     };
-
-    categorias.push(novaCategoria);
-
-    res.status(201).json({
-        mensagem: "Categoria criada com sucesso!",
-        categoria: novaCategoria
-    });
+  d.categorias.push(categoria);
+  salvar(d);
+  s.status(201).json({ categoria });
 };
-
-const atualizarCategoria = (req, res) => {
-    const id = Number(req.params.id);
-
-    const categoria = categorias.find(c => c.id === id);
-
-    if (!categoria) {
-        return res.status(404).json({
-            mensagem: "Categoria não encontrada."
-        });
-    }
-
-    const { nome, ativo } = req.body;
-
-    if (nome !== undefined) {
-        categoria.nome = nome;
-    }
-
-    if (ativo !== undefined) {
-        categoria.ativo = ativo;
-    }
-
-    res.json({
-        mensagem: "Categoria atualizada com sucesso!",
-        categoria
-    });
+const atualizarCategoria = (q, s) => {
+  const d = ler(),
+    x = d.categorias.find((x) => x.id === +q.params.id);
+  if (!x) return s.status(404).json({ mensagem: "Categoria não encontrada." });
+  Object.assign(x, q.body);
+  salvar(d);
+  s.json({ categoria: x });
 };
-
-const excluirCategoria = (req, res) => {
-    const id = Number(req.params.id);
-
-    const indice = categorias.findIndex(c => c.id === id);
-
-    if (indice === -1) {
-        return res.status(404).json({
-            mensagem: "Categoria não encontrada."
-        });
-    }
-
-    categorias.splice(indice, 1);
-
-    res.json({
-        mensagem: "Categoria excluída com sucesso!"
-    });
+const excluirCategoria = (q, s) => {
+  const d = ler();
+  d.categorias = d.categorias.filter((x) => x.id !== +q.params.id);
+  salvar(d);
+  s.json({ mensagem: "Categoria excluída." });
 };
-
 module.exports = {
-    listarCategorias,
-    buscarCategoriaPorId,
-    criarCategoria,
-    atualizarCategoria,
-    excluirCategoria
+  listarCategorias,
+  buscarCategoriaPorId,
+  criarCategoria,
+  atualizarCategoria,
+  excluirCategoria,
 };

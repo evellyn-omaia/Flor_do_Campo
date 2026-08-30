@@ -1,0 +1,1 @@
+const router=require("express").Router();const c=require("../controllers/carrinhoController");router.get("/:clienteId",c.buscar);router.post("/:clienteId",c.adicionar);router.patch("/:clienteId/:produtoId",c.atualizar);router.delete("/:clienteId/:produtoId",c.remover);module.exports=router;
