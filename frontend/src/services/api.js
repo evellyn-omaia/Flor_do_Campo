@@ -60,6 +60,38 @@ async function requisicao(caminho, opcoes = {}) {
   return dados;
 }
 
+function extrairLista(resposta, recurso) {
+  const lista = Array.isArray(resposta) ? resposta : resposta?.data;
+
+  if (!Array.isArray(lista)) {
+    throw new Error(`A API retornou um formato invalido para ${recurso}.`);
+  }
+
+  return lista;
+}
+
+async function requisicaoLista(caminho, recurso) {
+  return extrairLista(await requisicao(caminho), recurso);
+}
+
+function criarSlug(texto) {
+  return String(texto || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function normalizarCategoria(categoria) {
+  return {
+    ...categoria,
+    id: categoria.id ?? categoria.firebaseId,
+    slug: categoria.slug || criarSlug(categoria.nome)
+  };
+}
+
 function promocaoValida(banner) {
   if (banner.ativo === false) return false;
 
@@ -85,9 +117,9 @@ function numeroDesconto(texto) {
 export async function carregarLoja() {
   const [categorias, produtosBrutos, banners] =
     await Promise.all([
-      requisicao("/categorias"),
-      requisicao("/produtos"),
-      requisicao("/banners")
+      listarCategorias(),
+      requisicaoLista("/produtos", "produtos"),
+      requisicaoLista("/banners", "banners")
     ]);
 
   const promocoes = banners.filter(promocaoValida);
@@ -152,7 +184,10 @@ export async function carregarLoja() {
   };
 }
 
-export const listarCategorias = () => requisicao("/categorias");
+export const listarCategorias = async () =>
+  (await requisicaoLista("/categorias", "categorias")).map(
+    normalizarCategoria
+  );
 
 export const buscarPerfilAtual = () => requisicao("/usuarios/me");
 
