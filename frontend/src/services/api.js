@@ -217,6 +217,11 @@ export const atualizarProduto = (id, dados) =>
     body: JSON.stringify(dados)
   });
 
+export const excluirProduto = (id) =>
+  requisicao(`/produtos/${id}`, {
+    method: "DELETE"
+  });
+
 // Banners
 export const criarBanner = (dados) =>
   requisicao("/banners", {
