@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+# Configure VITE_SITE_URL para gerar sitemap e canonical.
