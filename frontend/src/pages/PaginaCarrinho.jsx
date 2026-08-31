@@ -4,29 +4,28 @@ import Cabecalho from "../components/Cabecalho";
 import Rodape from "../components/Rodape";
 import CartaoProduto, { imagensProdutos } from "../components/CartaoProduto";
 import Icone from "../components/Icone";
-import { usuarioAtual } from "../data/lojaLocal";
+import { useAuth } from "../contexts/AuthContext";
 import { atualizarItemCarrinho, buscarCarrinho, carregarLoja, removerItemCarrinho } from "../services/api";
 
 const dinheiro = (valor) => valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 function PaginaCarrinho() {
-  const usuario = usuarioAtual();
-  const usuarioEmail = usuario?.email;
+  const { usuario, carregando: carregandoAuth } = useAuth();
   const [itens, setItens] = useState([]);
   const [recomendados, setRecomendados] = useState([]);
-  const [carregando, setCarregando] = useState(Boolean(usuario));
+  const [carregandoCarrinho, setCarregandoCarrinho] = useState(Boolean(usuario));
   const [mensagem, setMensagem] = useState("");
   const [cupom, setCupom] = useState("");
   const [desconto, setDesconto] = useState(0);
 
   useEffect(() => {
     carregarLoja().then((loja) => setRecomendados(loja.produtos.slice(0, 5))).catch(() => {});
-    if (!usuarioEmail) return;
-    buscarCarrinho(usuarioEmail)
+    if (carregandoAuth || !usuario) return;
+    buscarCarrinho()
       .then((carrinho) => setItens(carrinho.itens || []))
       .catch((erro) => setMensagem(erro.message))
-      .finally(() => setCarregando(false));
-  }, [usuarioEmail]);
+      .finally(() => setCarregandoCarrinho(false));
+  }, [carregandoAuth, usuario]);
 
   const subtotal = useMemo(() => itens.reduce((soma, item) => soma + item.preco * item.quantidade, 0), [itens]);
   const total = Math.max(0, subtotal - desconto);
@@ -35,7 +34,7 @@ function PaginaCarrinho() {
     const anterior = itens;
     setItens((lista) => lista.map((i) => i === item ? { ...i, quantidade } : i));
     try {
-      const carrinho = await atualizarItemCarrinho(usuario.email, item.produtoId, { quantidade, cor: item.cor, tamanho: item.tamanho });
+      const carrinho = await atualizarItemCarrinho(item.produtoId, { quantidade, cor: item.cor, tamanho: item.tamanho });
       setItens(carrinho.itens);
       window.dispatchEvent(new Event("carrinho-atualizado"));
     } catch (erro) {
@@ -46,7 +45,7 @@ function PaginaCarrinho() {
 
   async function remover(item) {
     try {
-      const carrinho = await removerItemCarrinho(usuario.email, item.produtoId, item.cor, item.tamanho);
+      const carrinho = await removerItemCarrinho(item.produtoId, item.cor, item.tamanho);
       setItens(carrinho.itens);
       setMensagem("Produto removido do carrinho.");
       window.dispatchEvent(new Event("carrinho-atualizado"));
@@ -55,7 +54,7 @@ function PaginaCarrinho() {
 
   async function limparCarrinho() {
     try {
-      for (const item of itens) await removerItemCarrinho(usuario.email, item.produtoId, item.cor, item.tamanho);
+      for (const item of itens) await removerItemCarrinho(item.produtoId, item.cor, item.tamanho);
       setItens([]);
       setMensagem("Carrinho limpo com sucesso.");
       window.dispatchEvent(new Event("carrinho-atualizado"));
@@ -76,7 +75,7 @@ function PaginaCarrinho() {
   return <><Cabecalho /><main className="pagina-carrinho carrinho-referencia">
     <h1>Meu carrinho</h1><p className="breadcrumb"><Link to="/">Início</Link> <span>›</span> Carrinho</p>
     {mensagem && <div className="alerta-carrinho"><span><i className="ri-check-line"/></span>{mensagem}<button onClick={() => setMensagem("")}><i className="ri-close-line"/></button></div>}
-    {carregando ? <div className="carrinho-vazio"><p>Carregando seu carrinho...</p></div> : !usuario ?
+    {carregandoAuth || carregandoCarrinho ? <div className="carrinho-vazio"><p>Carregando seu carrinho...</p></div> : !usuario ?
       <div className="carrinho-vazio"><h2>Entre para ver seu carrinho</h2><p>Seus produtos ficam vinculados à sua conta.</p><Link className="botao-principal" to="/login">Fazer login</Link></div> : itens.length === 0 ?
       <div className="carrinho-vazio"><h2>Seu carrinho está vazio</h2><p>Que tal encontrar algo especial para você?</p><Link className="botao-principal" to="/produtos">Ver produtos</Link></div> :
       <><div className="carrinho-grade"><section className="tabela-carrinho"><div className="tabela-carrinho__cabecalho"><b>Produto</b><b>Preço</b><b>Quantidade</b><b>Total</b><b>Ações</b></div>

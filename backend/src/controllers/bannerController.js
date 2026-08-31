@@ -1,20 +1,105 @@
-const { ler, salvar } = require("../data/store");
-const listar = (q, s) => s.json(ler().banners);
-const criar = (q, s) => {
-  if (!q.body.titulo)
-    return s.status(400).json({ mensagem: "Título obrigatório." });
-  const d = ler(),
-    banner = { id: Date.now(), ativo: true, produtoIds: [], ...q.body };
-  d.banners.push(banner);
-  salvar(d);
-  s.status(201).json({ banner });
+const db = require("../config/firebase");
+
+async function obterBanners() {
+  const snapshot = await db.ref("banners").once("value");
+  const dados = snapshot.val() || {};
+
+  return Object.entries(dados).map(([firebaseId, banner]) => ({
+    ...banner,
+    firebaseId
+  }));
+}
+
+const listar = async (req, res) => {
+  try {
+    const banners = await obterBanners();
+
+    res.json(banners);
+  } catch (erro) {
+    console.error(erro);
+
+    res.status(500).json({
+      mensagem: "Erro ao listar banners."
+    });
+  }
 };
-const atualizar = (q, s) => {
-  const d = ler(),
-    b = d.banners.find((x) => x.id === +q.params.id);
-  if (!b) return s.status(404).json({ mensagem: "Banner não encontrado." });
-  Object.assign(b, q.body);
-  salvar(d);
-  s.json({ banner: b });
+
+const criar = async (req, res) => {
+  try {
+    if (!req.body.titulo) {
+      return res.status(400).json({
+        mensagem: "Título obrigatório."
+      });
+    }
+
+    const banner = {
+      id: Date.now(),
+      ativo: true,
+      produtoIds: [],
+      ...req.body
+    };
+
+    const referencia = db.ref("banners").push();
+
+    await referencia.set(banner);
+
+    res.status(201).json({
+      banner: {
+        ...banner,
+        firebaseId: referencia.key
+      }
+    });
+  } catch (erro) {
+    console.error(erro);
+
+    res.status(500).json({
+      mensagem: "Erro ao criar banner."
+    });
+  }
 };
-module.exports = { listar, criar, atualizar };
+
+const atualizar = async (req, res) => {
+  try {
+    const banners = await obterBanners();
+
+    const banner = banners.find(
+      (x) => String(x.id) === String(req.params.id)
+    );
+
+    if (!banner) {
+      return res.status(404).json({
+        mensagem: "Banner não encontrado."
+      });
+    }
+
+    const atualizado = {
+      ...banner,
+      ...req.body
+    };
+
+    delete atualizado.firebaseId;
+
+    await db
+      .ref(`banners/${banner.firebaseId}`)
+      .set(atualizado);
+
+    res.json({
+      banner: {
+        ...atualizado,
+        firebaseId: banner.firebaseId
+      }
+    });
+  } catch (erro) {
+    console.error(erro);
+
+    res.status(500).json({
+      mensagem: "Erro ao atualizar banner."
+    });
+  }
+};
+
+module.exports = {
+  listar,
+  criar,
+  atualizar
+};

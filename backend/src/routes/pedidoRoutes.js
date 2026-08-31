@@ -3,18 +3,30 @@ const express = require("express");
 const router = express.Router();
 
 const pedidoController = require("../controllers/pedidoController");
+
+const autenticar = require("../middlewares/authMiddleware");
 const verificarAdmin = require("../middlewares/verificarAdmin");
 
-router.post("/", pedidoController.criarPedido);
+router.post("/", autenticar, pedidoController.criarPedido);
 
-router.get("/", verificarAdmin, pedidoController.listarPedidos);
+router.get(
+  "/",
+  autenticar,
+  verificarAdmin,
+  pedidoController.listarPedidos
+);
 
-router.get("/:id", pedidoController.buscarPedidoPorId);
+router.get(
+  "/:id",
+  autenticar,
+  pedidoController.buscarPedidoPorId
+);
 
 router.patch(
-    "/:id/status",
-    verificarAdmin,
-    pedidoController.atualizarStatusPedido
+  "/:id/status",
+  autenticar,
+  verificarAdmin,
+  pedidoController.atualizarStatusPedido
 );
 
 module.exports = router;

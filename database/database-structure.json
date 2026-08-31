@@ -1,0 +1,16 @@
+{
+  "usuarios": {
+    "{uid}": {
+      "nome": "Nome do usuário",
+      "email": "email@exemplo.com",
+      "telefone": "",
+      "tipo": "cliente",
+      "ativo": true,
+      "criadoEm": "2026-08-30T00:00:00.000Z"
+    }
+  },
+  "categorias": {},
+  "produtos": {},
+  "pedidos": {},
+  "contatos": {}
+}

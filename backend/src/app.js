@@ -6,6 +6,7 @@ const cors = require("cors");
 const produtosRoutes = require("./routes/produtoRoutes");
 const bannerRoutes = require("./routes/bannerRoutes");
 const carrinhoRoutes = require("./routes/carrinhoRoutes");
+const usuarioRoutes = require("./routes/usuarioRoutes");
 const app = express();
 
 app.use(cors());
@@ -23,5 +24,6 @@ app.use("/api/carrinho", carrinhoRoutes);
 app.use("/api/categorias", categoriaRoutes);
 app.use("/api/pedidos", pedidoRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/usuarios", usuarioRoutes);
 
 module.exports = app;
