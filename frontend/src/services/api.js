@@ -1,8 +1,12 @@
 import { auth } from "../config/firebase";
 import { getIdToken } from "firebase/auth";
 
-const BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+const BASE_URL = (
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.PROD
+    ? "https://flor-do-campo-api.onrender.com/api"
+    : "http://localhost:3000/api")
+).replace(/\/$/, "");
 
 async function requisicao(caminho, opcoes = {}) {
   let resposta;
@@ -147,6 +151,8 @@ export async function carregarLoja() {
     produtos
   };
 }
+
+export const listarCategorias = () => requisicao("/categorias");
 
 export const buscarPerfilAtual = () => requisicao("/usuarios/me");
 

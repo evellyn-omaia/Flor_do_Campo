@@ -1,4 +1,4 @@
-import imagemHeroi from "../assets/images/referencia/hero-referencia.png";
+import imagemHeroi from "../assets/images/hero.png";
 import Icone from "./Icone";
 import { Link } from "react-router-dom";
 function Heroi() { return <section className="secao-heroi" aria-labelledby="titulo-heroi"><div className="secao-heroi__conteudo"><h1 id="titulo-heroi">Moda para <span>todos os momentos!</span></h1><p>Moda feminina, masculina e infantil com opções sociais e casuais para toda a família.</p><div className="secao-heroi__acoes"><a className="botao-principal" href="https://wa.me/5554992066660" target="_blank" rel="noreferrer"><Icone nome="whatsapp" />Fale pelo WhatsApp</a><Link className="botao-secundario" to="/categorias">Conheça nossos produtos</Link></div><div className="beneficios"><div><Icone nome="loja" /><b>Compre online e<br />retire na loja</b></div><div><Icone nome="cabide" /><b>Peças para todas<br />as ocasiões</b></div><div><Icone nome="natura" /><b>Produtos<br />Natura</b></div></div></div><div className="secao-heroi__imagem"><img src={imagemHeroi} alt="Modelo em uma loja de roupas Flor do Campo" /></div></section>; }
