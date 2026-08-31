@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import Cabecalho from "../components/Cabecalho";
 import Rodape from "../components/Rodape";
-import CartaoProduto, { imagensProdutos } from "../components/CartaoProduto";
+import CartaoProduto, { corrigirImagemProduto, imagensProdutos } from "../components/CartaoProduto";
 import Icone from "../components/Icone";
 import { useAuth } from "../contexts/AuthContext";
 import { atualizarItemCarrinho, buscarCarrinho, carregarLoja, removerItemCarrinho } from "../services/api";
@@ -80,7 +80,7 @@ function PaginaCarrinho() {
       <div className="carrinho-vazio"><h2>Seu carrinho está vazio</h2><p>Que tal encontrar algo especial para você?</p><Link className="botao-principal" to="/produtos">Ver produtos</Link></div> :
       <><div className="carrinho-grade"><section className="tabela-carrinho"><div className="tabela-carrinho__cabecalho"><b>Produto</b><b>Preço</b><b>Quantidade</b><b>Total</b><b>Ações</b></div>
         {itens.map((item) => <article className="linha-carrinho" key={`${item.produtoId}-${item.cor}-${item.tamanho}`}>
-          <div className="linha-carrinho__produto"><img src={item.imagens?.[0] || imagensProdutos[item.imagem] || imagensProdutos.terno} alt={item.nome}/><span><b>{item.nome}</b><small>Cor: {item.cor}</small><small>Tamanho: {item.tamanho}</small></span></div>
+          <div className="linha-carrinho__produto"><img src={item.imagens?.[0] || imagensProdutos[item.imagem] || imagensProdutos.terno} onError={corrigirImagemProduto} alt={item.nome}/><span><b>{item.nome}</b><small>Cor: {item.cor}</small><small>Tamanho: {item.tamanho}</small></span></div>
           <strong className="preco-rosa">{dinheiro(item.preco)}</strong>
           <div className="contador-carrinho"><button disabled={item.quantidade <= 1} onClick={() => alterarQuantidade(item, item.quantidade - 1)}>−</button><span>{item.quantidade}</span><button onClick={() => alterarQuantidade(item, item.quantidade + 1)}>+</button></div>
           <strong>{dinheiro(item.preco * item.quantidade)}</strong>
