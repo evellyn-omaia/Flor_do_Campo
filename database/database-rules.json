@@ -1,0 +1,51 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "usuarios": {
+      ".read": "auth != null && root.child('usuarios').child(auth.uid).child('tipo').val() === 'admin' && root.child('usuarios').child(auth.uid).child('ativo').val() === true",
+      ".write": "auth != null && root.child('usuarios').child(auth.uid).child('tipo').val() === 'admin' && root.child('usuarios').child(auth.uid).child('ativo').val() === true",
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid && newData.exists() && newData.child('email').val() === auth.token.email && ((!data.exists() && newData.child('tipo').val() === 'cliente' && newData.child('ativo').val() === true) || (data.exists() && newData.child('tipo').val() === data.child('tipo').val() && newData.child('ativo').val() === data.child('ativo').val() && newData.child('criadoEm').val() === data.child('criadoEm').val()))",
+        ".validate": "!newData.exists() || (newData.hasChildren(['nome', 'email', 'tipo', 'ativo', 'criadoEm']) && newData.child('nome').isString() && newData.child('email').isString() && (newData.child('tipo').val() === 'cliente' || newData.child('tipo').val() === 'admin') && newData.child('ativo').isBoolean() && newData.child('criadoEm').isString())"
+      }
+    },
+
+    "carrinhos": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+        ".validate": "!newData.exists() || newData.child('clienteId').val() === $uid"
+      }
+    },
+
+    "pedidos": {
+      ".read": "auth != null && root.child('usuarios').child(auth.uid).child('tipo').val() === 'admin' && root.child('usuarios').child(auth.uid).child('ativo').val() === true",
+      ".write": "auth != null && root.child('usuarios').child(auth.uid).child('tipo').val() === 'admin' && root.child('usuarios').child(auth.uid).child('ativo').val() === true",
+      ".indexOn": ["clienteId", "id", "status"],
+      "$pedidoId": {
+        ".read": "auth != null && data.child('clienteId').val() === auth.uid"
+      }
+    },
+
+    "produtos": {
+      ".read": true,
+      ".write": "auth != null && root.child('usuarios').child(auth.uid).child('tipo').val() === 'admin' && root.child('usuarios').child(auth.uid).child('ativo').val() === true",
+      ".indexOn": ["id", "categoriaId", "status"]
+    },
+
+    "categorias": {
+      ".read": true,
+      ".write": "auth != null && root.child('usuarios').child(auth.uid).child('tipo').val() === 'admin' && root.child('usuarios').child(auth.uid).child('ativo').val() === true",
+      ".indexOn": ["id", "slug", "ativo"]
+    },
+
+    "banners": {
+      ".read": true,
+      ".write": "auth != null && root.child('usuarios').child(auth.uid).child('tipo').val() === 'admin' && root.child('usuarios').child(auth.uid).child('ativo').val() === true",
+      ".indexOn": ["id", "ativo"]
+    }
+  }
+}

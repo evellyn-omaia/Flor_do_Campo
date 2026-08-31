@@ -15,13 +15,51 @@ async function buscarCarrinho(clienteId) {
   const snapshot = await db
     .ref(`carrinhos/${clienteId}`)
     .once("value");
+  const carrinho = snapshot.val() || {};
 
-  return (
-    snapshot.val() || {
-      clienteId,
-      itens: []
-    }
-  );
+  return {
+    clienteId,
+    ...carrinho,
+    itens: carrinho.itens || []
+  };
+}
+
+function obterEstoqueVariacao(produto, cor, tamanho) {
+  if (
+    typeof cor !== "string" ||
+    !Object.prototype.hasOwnProperty.call(
+      produto.variacoes || {},
+      cor
+    )
+  ) {
+    return {
+      erro: `A cor ${cor || "informada"} não existe para ${produto.nome}.`
+    };
+  }
+
+  const tamanhos = produto.variacoes[cor] || {};
+
+  if (
+    typeof tamanho !== "string" ||
+    !Object.prototype.hasOwnProperty.call(
+      tamanhos,
+      tamanho
+    )
+  ) {
+    return {
+      erro: `O tamanho ${tamanho || "informado"} não existe para ${produto.nome} na cor ${cor}.`
+    };
+  }
+
+  const estoque = Number(tamanhos[tamanho]);
+
+  if (!Number.isFinite(estoque) || estoque < 0) {
+    return {
+      erro: `O estoque de ${produto.nome} (${cor}/${tamanho}) está inválido.`
+    };
+  }
+
+  return { estoque };
 }
 
 const buscar = async (req, res) => {
@@ -51,18 +89,42 @@ const adicionar = async (req, res) => {
     const clienteId = req.usuario.uid;
     const carrinho = await buscarCarrinho(clienteId);
 
+    const quantidade = Number(req.body.quantidade);
+
+    if (!Number.isInteger(quantidade) || quantidade <= 0) {
+      return res.status(400).json({
+        mensagem: "A quantidade deve ser um número inteiro maior que zero."
+      });
+    }
+
+    const variacao = obterEstoqueVariacao(
+      produto,
+      req.body.cor,
+      req.body.tamanho
+    );
+
+    if (variacao.erro) {
+      return res.status(400).json({
+        mensagem: variacao.erro
+      });
+    }
+
     const item = carrinho.itens.find(
       (i) =>
-        i.produtoId === produto.id &&
+        String(i.produtoId) === String(produto.id) &&
         i.cor === req.body.cor &&
         i.tamanho === req.body.tamanho
     );
 
-    const quantidade = Number(req.body.quantidade);
+    const quantidadeTotal =
+      Number(item?.quantidade || 0) + quantidade;
 
-    if (!quantidade || quantidade <= 0) {
+    if (quantidadeTotal > variacao.estoque) {
       return res.status(400).json({
-        mensagem: "Quantidade inválida."
+        mensagem:
+          `Estoque insuficiente para ${produto.nome} ` +
+          `(${req.body.cor}/${req.body.tamanho}). ` +
+          `Disponível: ${variacao.estoque}.`
       });
     }
 
@@ -101,10 +163,37 @@ const atualizar = async (req, res) => {
   try {
     const clienteId = req.usuario.uid;
     const carrinho = await buscarCarrinho(clienteId);
+    const produto = await buscarProduto(req.params.produtoId);
+
+    if (!produto) {
+      return res.status(404).json({
+        mensagem: "Produto não encontrado."
+      });
+    }
+
+    const quantidade = Number(req.body.quantidade);
+
+    if (!Number.isInteger(quantidade) || quantidade <= 0) {
+      return res.status(400).json({
+        mensagem: "A quantidade deve ser um número inteiro maior que zero."
+      });
+    }
+
+    const variacao = obterEstoqueVariacao(
+      produto,
+      req.body.cor,
+      req.body.tamanho
+    );
+
+    if (variacao.erro) {
+      return res.status(400).json({
+        mensagem: variacao.erro
+      });
+    }
 
     const item = carrinho.itens.find(
       (i) =>
-        i.produtoId === Number(req.params.produtoId) &&
+        String(i.produtoId) === String(req.params.produtoId) &&
         i.cor === req.body.cor &&
         i.tamanho === req.body.tamanho
     );
@@ -115,10 +204,16 @@ const atualizar = async (req, res) => {
       });
     }
 
-    item.quantidade = Math.max(
-      1,
-      Number(req.body.quantidade)
-    );
+    if (quantidade > variacao.estoque) {
+      return res.status(400).json({
+        mensagem:
+          `Estoque insuficiente para ${produto.nome} ` +
+          `(${req.body.cor}/${req.body.tamanho}). ` +
+          `Disponível: ${variacao.estoque}.`
+      });
+    }
+
+    item.quantidade = quantidade;
 
     await db
       .ref(`carrinhos/${clienteId}`)

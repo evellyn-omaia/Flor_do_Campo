@@ -1,17 +1,26 @@
 const db = require("../config/firebase");
 
-function preparar(p) {
-  const total = Object.values(p.variacoes || {}).reduce(
-    (a, c) =>
-      a +
-      Object.values(c).reduce((s, n) => s + Number(n), 0),
+function calcularEstoque(variacoes = {}) {
+  return Object.values(variacoes).reduce(
+    (totalCores, tamanhos) =>
+      totalCores +
+      Object.values(tamanhos || {}).reduce(
+        (totalTamanhos, quantidade) =>
+          totalTamanhos + Number(quantidade || 0),
+        0
+      ),
     0
   );
+}
+
+function preparar(p) {
+  const estoqueTotal = calcularEstoque(p.variacoes);
 
   return {
     ...p,
-    estoqueTotal: total,
-    statusEstoque: total ? "em_estoque" : "esgotado",
+    estoqueTotal,
+    statusEstoque:
+      estoqueTotal > 0 ? "em_estoque" : "esgotado",
   };
 }
 
@@ -73,7 +82,7 @@ async function criarProduto(req, res) {
       });
     }
 
-    const produto = {
+    const produto = preparar({
       id: Date.now(),
       descricao: "",
       codigo: "",
@@ -85,7 +94,7 @@ async function criarProduto(req, res) {
       variacoes: {},
       ...req.body,
       preco: Number(preco),
-    };
+    });
 
     const referencia = db.ref("produtos").push();
 
@@ -120,11 +129,11 @@ async function atualizarProduto(req, res) {
       });
     }
 
-    const atualizado = {
+    const atualizado = preparar({
       ...produto,
       ...req.body,
       firebaseId: undefined,
-    };
+    });
 
     delete atualizado.firebaseId;
 
