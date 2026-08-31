@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+    <url>
+        <loc>https://flor-do-campo-nu.vercel.app/</loc>
+    </url>
+
+    <url>
+        <loc>https://flor-do-campo-nu.vercel.app/produtos</loc>
+    </url>
+
+    <url>
+        <loc>https://flor-do-campo-nu.vercel.app/categorias</loc>
+    </url>
+
+    <url>
+        <loc>https://flor-do-campo-nu.vercel.app/categoria/promocoes</loc>
+    </url>
+
+    <url>
+        <loc>https://flor-do-campo-nu.vercel.app/sobre</loc>
+    </url>
+
+    <url>
+        <loc>https://flor-do-campo-nu.vercel.app/localizacao</loc>
+    </url>
+
+    <url>
+        <loc>https://flor-do-campo-nu.vercel.app/contato</loc>
+    </url>
+
+</urlset>
