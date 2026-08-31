@@ -189,8 +189,6 @@ export const listarCategorias = async () =>
     normalizarCategoria
   );
 
-export const buscarPerfilAtual = () => requisicao("/usuarios/me");
-
 // Categorias
 export const criarCategoria = (dados) =>
   requisicao("/categorias", {

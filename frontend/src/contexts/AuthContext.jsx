@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { auth } from "../config/firebase";
-import { buscarPerfilAtual } from "../services/api";
+import { get, ref } from "firebase/database";
+import { auth, database } from "../config/firebase";
 import { definirPerfilAtual } from "../data/lojaLocal";
 
 const AuthContext = createContext(null);
@@ -18,16 +18,30 @@ export function AuthProvider({ children }) {
 
     if (usuario) {
       try {
-        perfilCarregado = await buscarPerfilAtual();
-      } catch (erro) {
-        console.error("Não foi possível carregar o perfil do usuário:", erro);
-        perfilCarregado = { uid: usuario.uid, email: usuario.email, nome: usuario.displayName || usuario.email };
+        const snapshot = await get(ref(database, `usuarios/${usuario.uid}`));
+
+        if (snapshot.exists()) {
+          perfilCarregado = {
+            ...snapshot.val(),
+            uid: usuario.uid,
+            email: usuario.email
+          };
+        }
+      } catch {
+        // A autenticação continua válida mesmo se o perfil estiver indisponível.
+      }
+
+      if (!perfilCarregado) {
+        perfilCarregado = {
+          uid: usuario.uid,
+          email: usuario.email,
+          nome: usuario.displayName || usuario.email
+        };
       }
     }
 
     setPerfil(perfilCarregado);
     definirPerfilAtual(perfilCarregado);
-
     setCarregando(false);
   }), []);
 
@@ -46,7 +60,11 @@ export function AuthProvider({ children }) {
 
   const sair = () => signOut(auth);
 
-  return <AuthContext.Provider value={{ usuario, carregando, sair }}>{carregando ? null : children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ usuario, carregando, sair }}>
+      {carregando ? null : children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {
