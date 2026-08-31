@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import imagemSocialPadrao from "../assets/images/referencia/hero-referencia.png";
+import imagemSocialPadrao from "../assets/images/hero.png";
 import { urlPublica } from "./seoConfig";
 
 const nomeLoja = "Flor do Campo";
